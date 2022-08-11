@@ -13,6 +13,10 @@ app.get("/", (req, res) => {
     res.sendFile(duongDanFile)
 })
 
+app.get("/home", (req, res) => {
+    res.json("HOME")
+})
+
 
 app.listen(process.env.PORT, () => {
     console.log(`App listening at http://localhost:${port}`)
