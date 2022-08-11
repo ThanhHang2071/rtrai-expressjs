@@ -7,6 +7,7 @@
 7. [TÌM HIỂU CHUẨN RESTFUL API](#tìm-hiểu-chuẩn-restful-api)
 8. [EXPRESS STATIC , THIẾT LẬP FILE TĨNH, PUBLIC FILE TRONG EXPRESSJS](#express-static--thiết-lập-file-tĩnh-public-file-trong-expressjs)
 9. [HƯỚNG DẪN ĐẨY CODE EXPRESSJS NODEJS LÊN HEROKU - DELOY SERVER HEROKU](#hướng-dẫn-đẩy-code-expressjs-nodejs-lên-heroku---deloy-server-heroku)
+10. [PHÂN TRANG API, PAGINATION API](#phân-trang-api-pagination-api)
 
 # TỔNG QUAN FRAMEWORK EXPRESSJS NODEJS
 
@@ -470,5 +471,110 @@ $ git push
 ```
 - Chỉnh lại file server đoạn tạo port lắng nghe :
 ```javascript
-
+app.listen(process.env.PORT, () => {
+    console.log(`App listening`)
+    // console.log(`App listening at http://localhost:${port}`)
+  })
 ```
+
+# PHÂN TRANG API, PAGINATION API 
+
+- Tăng trải nghiệm người dùng tốt hơn với phân trang, mỗi lần lướt xuống hoặc qua trang sẽ load khối phần tử trong dữ liệu đó 
+- Xem giải thích ở clip <a href="https://www.youtube.com/watch?v=s5DmOa10aG8&list=PLodO7Gi1F7R1GMefX_44suLAaXnaNYMyC&index=10">này</a>
+- Tạo file `User.js` trong folder `models` :
+- **`User.js`** :
+```javascript
+const mongoose = require('mongoose')
+mongoose.connect('mongodb://localhost/ExpressJS')
+
+const Schema = mongoose.Schema
+
+const AccountSchema = new Schema({
+  username : {
+    type : String,
+    require : true
+  }, 
+  password : {
+    type : String,
+    require : true
+  }
+}, {
+    collection : 'account'
+})
+
+const AccountModel = mongoose.model("account", AccountSchema)
+
+for (let i = 0; i < 20; i++) {
+  AccountModel.create({
+    username : "RTR_AI_" + i,
+    password : 123456
+  })
+}
+
+module.exports = AccountModel
+```
+*Vòng lặp for để tạo 20 acc với pass là "123456", sau đó xóa phần vòng lặp đó đi.*
+
+- Lúc này `server.js` sẽ như thế này để xem all users, hoặc coi theo từng trang :
+```javascript
+const express = require('express')
+const bodyParser = require('body-parser')
+const path  = require('path') 
+
+const AccountModel = require('./models/account')
+
+const port = 7777
+const app = express()
+
+app.use("/public" ,express.static(path.join(__dirname, '/public')))
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
+
+const PAGE_SIZE = 2   // Số phần tử giới hạn
+
+app.get('/user', (req, res, next) => {
+  var page = req.query.page
+  // http://localhost:7777/user?page=1
+  if(page) {
+    // get page
+    page = parseInt(page)
+    if (page < 1) {
+      page = 1
+    }
+    var skip = (page - 1) * PAGE_SIZE // Số lượng bỏ qua
+    AccountModel.find({})
+    .skip(skip)
+    .limit(PAGE_SIZE)   
+    .then(data => {
+      res.json(data)
+    })
+    .catch(err => {
+      res.status(500).json("Có lỗi bên server")
+    })
+  }
+  else {
+    // get all
+    AccountModel.find({})
+    .then(data => {
+      res.json(data)  
+    })
+    .catch(err => {
+      res.status(500).json("Có lỗi bên server")
+    })
+  }
+})
+
+// app.listen(process.env.PORT, () => {
+//     console.log(`App listening`)
+//     // console.log(`App listening at http://localhost:${port}`)
+//   })
+
+app.listen(port, () => {
+    console.log(`App listening at http://localhost:${port}`)
+  })
+```
+
