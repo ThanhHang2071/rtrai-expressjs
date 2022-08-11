@@ -442,12 +442,30 @@ width='50%'>
 width='100%'>
 </div>
 
-- Vào `GitHub` tạo resposity mới :
+- Vào `GitHub` tạo resposity mới và up dữ liệu lên GitHub theo hướng dẫn <a href="https://fullstack.edu.vn/blog/cach-dua-code-len-github-va-tao-github-pages.html">này</a>
 <div align='center'>
 <img src="img/createReGit.png" 
 width='100%'>
 </div>
 
-- Chọn `Connect to GitHub`#   r t r a i - e x p r e s s j s  
- #   r t r a i - e x p r e s s j s  
- 
+- Chọn `Connect to GitHub`, chọn dự án đã up, kéo xuống chọn `Enable Automatic Deploys` 
+
+<div align='center'>
+<img src="img/autodeployGit.png" 
+width='100%'>
+</div>
+
+- Kéo lên bấm vào `Open App` sẽ có giao diện, chờ khoảng vài phút 
+
+- Mỗi lần sửa code xong cần up lên dùng lệnh trong terminal :
+``` 
+$ git add .
+```
+- Thêm commit :
+```
+$ git commit -m "..."
+```
+```
+$ git push
+```
+
