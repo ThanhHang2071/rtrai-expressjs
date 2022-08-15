@@ -9,6 +9,7 @@
 9. [HƯỚNG DẪN ĐẨY CODE EXPRESSJS NODEJS LÊN HEROKU - DELOY SERVER HEROKU](#hướng-dẫn-đẩy-code-expressjs-nodejs-lên-heroku---deloy-server-heroku)
 10. [PHÂN TRANG API, PAGINATION API](#phân-trang-api-pagination-api)
 11. [LUYỆN TẬP PHÂN TRANG PAGINATION API DƯỚI CLIENT](#luyện-tập-phân-trang-pagination-api-dưới-client)
+12. [GIỚI THIỆU VỀ CORS VÀ CÁCH MỞ CORS TRONG EXPRESS SERVER](#giới-thiệu-về-cors-và-cách-mở-cors-trong-express-server)
 
 # TỔNG QUAN FRAMEWORK EXPRESSJS NODEJS
 
@@ -706,4 +707,23 @@ function prePage() {
 <script src="./public/js/jquery-3.6.0.min.js"></script>
 <script src="./public/js/main.js"></script>
 </html>
+```
+
+# GIỚI THIỆU VỀ CORS VÀ CÁCH MỞ CORS TRONG EXPRESS SERVER
+
+- CORS là một cơ chế cho phép nhiều tài nguyên khác nhau (fonts, Javascript, v.v…) của một trang web có thể được truy vấn từ domain khác với domain của trang đó. CORS là viết tắt của từ `Cross-origin resource sharing`.
+- Tải thư viện về :
+```
+$ npm i cors
+```
+- Thêm vào `index.js` đoạn sau :
+```javascript
+//CORS middleware
+var allowCrossDomain = function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', 'example.com');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+  next();
+}
 ```

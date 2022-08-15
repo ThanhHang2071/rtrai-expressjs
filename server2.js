@@ -4,16 +4,7 @@ const path  = require('path')
 
 const AccountModel = require('./models/account')
 
-//CORS middleware
-var allowCrossDomain = function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', 'example.com');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-
-  next();
-}
-
-const port = 7777
+const port = 4000
 const app = express()
 
 app.use("/public" ,express.static(path.join(__dirname, '/public')))
