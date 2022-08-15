@@ -8,6 +8,7 @@
 8. [EXPRESS STATIC , THIẾT LẬP FILE TĨNH, PUBLIC FILE TRONG EXPRESSJS](#express-static--thiết-lập-file-tĩnh-public-file-trong-expressjs)
 9. [HƯỚNG DẪN ĐẨY CODE EXPRESSJS NODEJS LÊN HEROKU - DELOY SERVER HEROKU](#hướng-dẫn-đẩy-code-expressjs-nodejs-lên-heroku---deloy-server-heroku)
 10. [PHÂN TRANG API, PAGINATION API](#phân-trang-api-pagination-api)
+11. [LUYỆN TẬP PHÂN TRANG PAGINATION API DƯỚI CLIENT](#luyện-tập-phân-trang-pagination-api-dưới-client)
 
 # TỔNG QUAN FRAMEWORK EXPRESSJS NODEJS
 
@@ -578,3 +579,131 @@ app.listen(port, () => {
   })
 ```
 
+# LUYỆN TẬP PHÂN TRANG PAGINATION API DƯỚI CLIENT
+
+- Tạo file `index.html` trong đó : 
+``` html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./public/home.css">
+</head>
+<body>
+    <h1>Welcome</h1>
+</body>
+<script src="./public/js/jquery-3.6.0.min.js"></script>
+<script src="./public/js/main.js"></script>
+</html>
+```
+
+- Tạo folder `js` trong folder `public`, sau đó :
+  - Vào <a href="https://code.jquery.com/jquery-3.6.0.min.js">đây</a> save thành file `public/js/jquery-3.6.0.min.js` 
+  - Tạo file `main.js`, trong đó :
+```javascript
+var currentPage = 1
+
+function loadPage(page) {
+    currentPage = page
+    $.ajax({
+        url : '/user?page=' + page,
+        type : 'GET'
+    })
+    .then(data => {
+        $(`#content`).html('')
+        console.log(data)
+        for (let i = 0; i < data.length; i++) {
+            const element = data[i];
+            var item = $(`
+                <h1>${element.username} : ${element.password}</h1>
+            `)
+    
+            $(`#content`).append(item)
+        }
+    })
+    .catch(err => {
+        console.log('API lỗi')
+    })
+}
+
+function nextPage() {
+    currentPage++
+    $.ajax({
+        url : '/user?page=' + currentPage,
+        type : 'GET'
+    })
+    .then(data => {
+        $(`#content`).html('')
+        console.log(data)
+        for (let i = 0; i < data.length; i++) {
+            const element = data[i];
+            var item = $(`
+                <h1>${element.username} : ${element.password}</h1>
+            `)
+    
+            $(`#content`).append(item)
+        }
+    })
+    .catch(err => {
+        console.log('API lỗi')
+    })
+}
+
+function prePage() {
+    currentPage--
+    $.ajax({
+        url : '/user?page=' + currentPage,
+        type : 'GET'
+    })
+    .then(data => {
+        $(`#content`).html('')
+        console.log(data)
+        for (let i = 0; i < data.length; i++) {
+            const element = data[i];
+            var item = $(`
+                <h1>${element.username} : ${element.password}</h1>
+            `)
+    
+            $(`#content`).append(item)
+        }
+    })
+    .catch(err => {
+        console.log('API lỗi')
+    })
+}
+
+```
+- `index.html`:
+``` html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./public/css/home.css">
+</head>
+<link rel="stylesheet" href="./public/css/bootstrap.css">
+<body>
+    <div id="content"></div>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+          <li class="page-item"><a class="page-link" href="#" onclick="prePage(1)">Previous</a></li>
+          <li class="page-item"><a class="page-link" href="#" onclick="loadPage(1)">1</a></li>
+          <li class="page-item"><a class="page-link" href="#" onclick="loadPage(2)">2</a></li>
+          <li class="page-item"><a class="page-link" href="#" onclick="loadPage(3)">3</a></li>
+          <li class="page-item"><a class="page-link" href="#" onclick="loadPage(4)">4</a></li>
+          <li class="page-item"><a class="page-link" href="#" onclick="loadPage(5)">5</a></li>
+          <li class="page-item"><a class="page-link" href="#" onclick="nextPage()">Next</a></li>
+        </ul>
+    </nav>
+</body>
+<script src="./public/js/pagination.js"></script>
+<script src="./public/js/jquery-3.6.0.min.js"></script>
+<script src="./public/js/main.js"></script>
+</html>
+```

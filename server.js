@@ -31,7 +31,13 @@ app.get('/user', (req, res, next) => {
     .skip(skip)
     .limit(PAGE_SIZE)   
     .then(data => {
-      res.json(data)
+      AccountModel.countDocuments({}).then((total) =>{
+        var allPage = Math.ceil(total / PAGE_SIZE)
+        res.json({
+          allPage : allPage,
+          data : data
+        })
+      }) 
     })
     .catch(err => {
       res.status(500).json("Có lỗi bên server")
@@ -41,12 +47,23 @@ app.get('/user', (req, res, next) => {
     // get all
     AccountModel.find({})
     .then(data => {
-      res.json(data)  
+      AccountModel.countDocuments({}).then((total) =>{
+        console.log(err, total)
+        var allPage = Math.ceil(total / PAGE_SIZE)
+        res.json({
+          allPage : allPage,
+          data : data
+        })
+      })  
     })
     .catch(err => {
       res.status(500).json("Có lỗi bên server")
     })
   }
+})
+
+app.get('/home', (req, res, next) => {
+    res.sendFile(path.join(__dirname, 'index.html'))
 })
 
 // app.listen(process.env.PORT, () => {
