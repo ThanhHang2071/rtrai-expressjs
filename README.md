@@ -10,6 +10,7 @@
 10. [PHÂN TRANG API, PAGINATION API](#phân-trang-api-pagination-api)
 11. [LUYỆN TẬP PHÂN TRANG PAGINATION API DƯỚI CLIENT](#luyện-tập-phân-trang-pagination-api-dưới-client)
 12. [GIỚI THIỆU VỀ CORS VÀ CÁCH MỞ CORS TRONG EXPRESS SERVER](#giới-thiệu-về-cors-và-cách-mở-cors-trong-express-server)
+13. [JSONWEBTOKEN TRONG EXPRESSJS](#jsonwebtoken-trong-expressjs)
 
 # TỔNG QUAN FRAMEWORK EXPRESSJS NODEJS
 
@@ -727,3 +728,75 @@ var allowCrossDomain = function(req, res, next) {
   next();
 }
 ```
+# JSONWEBTOKEN TRONG EXPRESSJS 
+
+(Xem video giải thích ở <a href="https://www.youtube.com/watch?v=MMhW3SNZwJQ&list=PLodO7Gi1F7R1GMefX_44suLAaXnaNYMyC&index=14">đây</a>)
+
+- `JWT` là một phương tiện đại diện cho các yêu cầu chuyển giao giữa hai bên Client – Server , các thông tin trong chuỗi JWT được định dạng bằng JSON . Trong đó chuỗi Token phải có 3 phần là :
+  - `Header` : Chứa kiểu dữ liệu, và thuật toán sử dụng để mã hóa ra chuỗi JWT
+``` json
+{
+    "typ": "JWT",
+    "alg": "HS256"
+}
+```
+*“typ” (type) chỉ ra rằng đối tượng là một JWT
+“alg” (algorithm) xác định thuật toán mã hóa cho chuỗi là HS256*
+
+  - `Payload` : chứa các thông tin muốn đặt trong chuỗi Token như :
+``` json
+{
+  "user_name": "admin",
+  "user_id": "1513717410",
+  "authorities": "ADMIN_USER",
+  "jti": "474cb37f-2c9c-44e4-8f5c-1ea5e4cc4d18"
+}
+```
+  - `Signature` : được tạo ra bằng cách mã hóa phần header, payload kèm theo một chuỗi *secret* (khóa bí mật) :
+```js
+data = base64urlEncode( header ) + "." + base64urlEncode( payload )
+signature = Hash( data, secret );
+```
+*base64UrlEncoder : thuật toán mã hóa header và payload*
+Sau khi mã hóa :
+```
+// header
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+// payload
+eyJhdWQiOlsidGVzdGp3dHJlc291cmNlaWQiXSwidXNlcl9uYW1lIjoiYWRtaW4iLCJzY29wZSI6WyJyZWFkIiwid3JpdGUiXSwiZXhwIjoxNTEzNzE
+```
+Sau đó mã hóa 2 chuỗi trên kèm theo secret (khóa bí mật) bằng thuật toán HS256 :
+```
+9nRhBWiRoryc8fV5xRpTmw9iyJ6EM7WTGTjvCM1e36Q
+```
+--> *Cuối cùng kết hợp 3 chuỗi trên sẽ được một chuỗi JWT hoàn chỉnh*
+
+- Tải thư viện :
+```
+$ npm i jsonwebtoken
+```
+
+- Tạo 1 file `training.js` :
+```javascript
+var jwt = require('jsonwebtoken')
+
+var data = { username : 'rtr'}
+var token = jwt.sign(data, 'rtrai')
+
+console.log(token)
+```
+- Chạy file được đoạn mã hóa sau :
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJ0ciIsImlhdCI6MTY2MDU0Njk4OX0.QrWdM8DeXbVq6CeaTMRh7YPvxWDVf-BGBacE0yH_WH8
+```
+- Muốn xem mã hóa ngược vào <a href="https://fullstack.edu.vn/blog/cach-dua-code-len-github-va-tao-github-pages.html">đây</a>
+
+*NOTE* :
+  - token = header.payload.signature
+
+  - data + secret (sign) => token
+  - token + secret (verify) => data
+
+  - Sign : có callback là hàm bất đồng bộ (async), có thể set ExpriedIn
+  
+  - Mỗi token đều có tham số riêng, khi tạo ra không hủy được token đó
