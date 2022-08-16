@@ -1,6 +1,8 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const path  = require('path') 
+const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
 
 const AccountModel = require('./models/account')
 
@@ -9,12 +11,13 @@ var allowCrossDomain = function(req, res, next) {
   res.header('Access-Control-Allow-Origin', 'example.com');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
-
+  
   next();
 }
 
 const port = 7777
 const app = express()
+app.use(cookieParser())
 
 app.use("/public" ,express.static(path.join(__dirname, '/public')))
 
@@ -73,6 +76,55 @@ app.get('/user', (req, res, next) => {
 
 app.get('/home', (req, res, next) => {
     res.sendFile(path.join(__dirname, 'index.html'))
+})
+
+// ---------------LOGIN-------------------------------------------------
+// GET
+app.get('/login', (req, res, next) => {
+  res.sendFile(path.join(__dirname,'login.html')) 
+})
+
+// POST
+app.post('/login', (req, res, next) => {
+  var username = req.body.username
+  var password = req.body.password
+  AccountModel.findOne({
+    username: username,
+    password: password 
+  })
+  .then(data => {
+    if (data) {
+      var token = jwt.sign({
+        _id : data._id
+      }, `mk`)
+      return res.json({
+        message : 'Bạn đã đăng nhập thành công',
+        token : token
+      })
+    }
+    else {
+      return res.json('Đăng nhập thất bại')
+    }
+  })
+  .catch(err => {
+    res.status(500).json('Lỗi server')
+  })
+})
+
+// ---------------PRIVATE-------------------------------------------------
+app.get('/private', (req, res, next) => {
+  try {
+    var token = req.cookies.token
+    var ketqua = jwt.verify(token, 'mk')
+    if (ketqua) {
+      next()
+    }
+  } catch (error) {
+    // return res.json('Bạn cần đăng nhập')
+    return res.redirect('/login') 
+  }
+}, (req, res, next) => {
+  res.json('Welcomeeee!!!')
 })
 
 // app.listen(process.env.PORT, () => {

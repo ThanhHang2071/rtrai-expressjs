@@ -18,6 +18,7 @@ const AccountSchema = new Schema({
 
 const AccountModel = mongoose.model("account", AccountSchema)
 
+// Tạo tài khoản hàng loạt 
 // for (let i = 0; i < 20; i++) {
 //   AccountModel.create({
 //     username : "RTR_AI_" + i,

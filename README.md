@@ -11,6 +11,7 @@
 11. [LUYỆN TẬP PHÂN TRANG PAGINATION API DƯỚI CLIENT](#luyện-tập-phân-trang-pagination-api-dưới-client)
 12. [GIỚI THIỆU VỀ CORS VÀ CÁCH MỞ CORS TRONG EXPRESS SERVER](#giới-thiệu-về-cors-và-cách-mở-cors-trong-express-server)
 13. [JSONWEBTOKEN TRONG EXPRESSJS](#jsonwebtoken-trong-expressjs)
+14. [ÁP DỤNG JWT LÀM CHỨC NĂNG ĐĂNG NHẬP, XÁC THỰC LOGIN VÀ BẢO VỆ ROUTER](#áp-dụng-jwt-làm-chức-năng-đăng-nhập-xác-thực-login-và-bảo-vệ-router)
 
 # TỔNG QUAN FRAMEWORK EXPRESSJS NODEJS
 
@@ -717,7 +718,7 @@ function prePage() {
 ```
 $ npm i cors
 ```
-- Thêm vào `index.js` đoạn sau :
+- Thêm vào `server.js` đoạn sau :
 ```javascript
 //CORS middleware
 var allowCrossDomain = function(req, res, next) {
@@ -800,3 +801,234 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJ0ciIsImlhdCI6MTY2MDU0Njk
   - Sign : có callback là hàm bất đồng bộ (async), có thể set ExpriedIn
   
   - Mỗi token đều có tham số riêng, khi tạo ra không hủy được token đó
+
+# ÁP DỤNG JWT LÀM CHỨC NĂNG ĐĂNG NHẬP, XÁC THỰC LOGIN VÀ BẢO VỆ ROUTER 
+- Tạo một file `login.html` :
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    Username : <input type="text"><br>
+    Password : <input type="text"><br>
+    <button onclick="">Login</button>
+</body>
+</html>
+```
+- Thêm vào trong `server.js` method post và get cho login :
+```javascript
+// ---------------LOGIN-------------------------------------------------
+// GET
+app.get('/login', (req, res, next) => {
+  res.sendFile(path.join(__dirname,'login.html')) 
+})
+
+// POST
+app.post('/login', (req, res, next) => {
+  var username = req.body.username
+  var password = req.body.password
+  AccountModel.findOne({
+    username: username,
+    password: password 
+  })
+  .then(data => {
+    if (data) {
+      return res.json('Bạn đã đăng nhập thành công')
+    }
+    else {
+      return res.json('Đăng nhập thất bại')
+    }
+  })
+  .catch(err => {
+    res.status(500).json('Lỗi server')
+  })
+})
+```
+- Trả về token là một id (`server.js`), sửa lại phần post thành :
+
+```javascript
+const jwt = require('jsonwebtoken')
+
+// POST
+app.post('/login', (req, res, next) => {
+  var username = req.body.username
+  var password = req.body.password
+  AccountModel.findOne({
+    username: username,
+    password: password 
+  })
+  .then(data => {
+    if (data) {
+      var token = jwt.sign({
+        _id : data._id
+      }, `mk`)
+      return res.json({
+        message : 'Bạn đã đăng nhập thành công',
+        token : token
+      })
+    }
+    else {
+      return res.json('Đăng nhập thất bại')
+    }
+  })
+  .catch(err => {
+    res.status(500).json('Lỗi server')
+  })
+})
+```
+Test API được :
+
+<div align='center'>
+<img src="img/loginAPI.png" 
+width='100%'>
+</div>
+
+- Chỉnh giao diện để tương tác (`login.html`) :
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<script src="./public//js/jquery-3.6.0.min.js"></script>
+<body>
+    Username : <input type="text" id="username" placeholder="Username" required><br>
+    Password : <input type="text" id="password" placeholder="Password" required><br>
+    <button onclick="login()">Login</button>
+</body>
+<script>
+    function login() {  
+        $.ajax({
+            url : '/login',
+            type : 'POST',
+            data : {
+                username : $('#username').val(),
+                password : $('#password').val(),
+            }
+        })
+        .then(data => {
+            console.log(data)
+        })
+        .catch(err => {
+            console.log(err)
+        })
+    }
+</script>
+</html>
+```
+- Tạo một trang chỉ đăng nhập mới được xem (/private), có lưu token vào cookie
+- `server.js` :
+```javascript
+// ---------------PRIVATE-------------------------------------------------
+app.get('/private/:token', (req, res, next) => {
+  try {
+    var token = req.params.token 
+    var ketqua = jwt.verify(token, 'mk')
+    if (ketqua) {
+      next
+    }
+  } catch (error) {
+    return res.json('Bạn cần đăng nhập')
+  }
+}, (req, res, next) => {
+  res.json('Welcomeeee!!!')
+})
+```
+- `login.html` :
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<script src="./public//js/jquery-3.6.0.min.js"></script>
+<body>
+    Username : <input type="text" id="username" placeholder="Username" required><br>
+    Password : <input type="text" id="password" placeholder="Password" required><br>
+    <button onclick="login()">Login</button>
+</body>
+<script>
+    function setCookie(cname, cvalue, exdays) {
+        const d = new Date();
+        d.setTime(d.getTime() + (exdays*24*60*60*1000));
+        let expires = "expires="+ d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for(let i = 0; i <ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+    function login() {  
+        $.ajax({
+            url : '/login',
+            type : 'POST',
+            data : {
+                username : $('#username').val(),
+                password : $('#password').val(),
+            }
+        })
+        .then(data => {
+            setCookie('token', data.token, 1)
+            console.log(data)
+        })
+        .catch(err => {
+            console.log(err)
+        })
+    }
+</script>
+</html>
+```
+- Để đọc được cookie cần tải thư viện `cookie - parser`
+```
+$ npm i cookie-parser
+```
+
+- Thêm vào `server.js` :
+```javascript
+const cookieParser = require('cookie-parser')
+
+app.use(cookieParser())
+
+// ---------------PRIVATE-------------------------------------------------
+app.get('/private', (req, res, next) => {
+  try {
+    var token = req.cookies.token
+    var ketqua = jwt.verify(token, 'mk')
+    if (ketqua) {
+      next()
+    }
+  } catch (error) {
+    // return res.json('Bạn cần đăng nhập')
+    return res.redirect('/login') 
+  }
+}, (req, res, next) => {
+  res.json('Welcomeeee!!!')
+})
+```
+
+
+
