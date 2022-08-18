@@ -150,12 +150,46 @@ var checkLogin = (req, res, next) => {
   }
 }
 
+var checkStudent = (req, res, next) => {
+  var role = req.data.role
+  if (role === 'student' || role === 'teacher' || role === 'manager') {
+    next()
+  }
+  else {
+    res.json('NOT PERMISSION')
+  }
+}
+
+var checkTeacher = (req, res, next) => {
+  var role = req.data.role
+  if (role === 'teacher' || role === 'manager') {
+    next()
+  }
+  else {
+    res.json('NOT PERMISSION')
+  }
+}
+
+var checkManager = (req, res, next) => {
+  var role = req.data.role
+  if (role === 'manager') {
+    next()
+  }
+  else {
+    res.json('NOT PERMISSION')
+  }
+}
+
 // -----------------------------ALL TASK----------------
-app.get('/task', checkLogin, (req, res, next) => {
+app.get('/task', checkLogin, checkStudent, (req, res, next) => {
   res.json('ALL TASK')
 })
 
-app.get('/teacher', checkLogin, (req, res, next) => {
+app.get('/student', checkLogin, checkTeacher, (req, res, next) => {
+  res.json('STUDENT')
+})
+
+app.get('/teacher', checkLogin, checkManager, (req, res, next) => {
   res.json('TEACHER')
 })
 
@@ -168,4 +202,4 @@ app.get('/teacher', checkLogin, (req, res, next) => {
 
 app.listen(port, () => {
     console.log(`App listening at http://localhost:${port}`)
-  })
+  }) 

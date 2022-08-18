@@ -1065,7 +1065,53 @@ app.get('/task', checkLogin, (req, res, next) => {
   res.json('ALL TASK')
 })
 ```
-- Tạo middleware chỉ account student mới được vào :
+- Tạo middleware chỉ account student, teacher, manager mới được vào :
 ``` javascript
+var checkStudent = (req, res, next) => {
+  var role = req.data.role
+  if (role === 'student' || role === 'teacher' || role === 'manager') {
+    next()
+  }
+  else {
+    res.json('NOT PERMISSION')
+  }
+}
 
+// -----------------------------ALL TASK----------------
+app.get('/task', checkLogin, checkStudent, (req, res, next) => {
+  res.json('ALL TASK')
+})
 ```
+- Tạo middleware chỉ account teacher, manager mới được vào :
+``` javascript
+var checkTeacher = (req, res, next) => {
+  var role = req.data.role
+  if (role === 'teacher' || role === 'manager') {
+    next()
+  }
+  else {
+    res.json('NOT PERMISSION')
+  }
+}
+
+app.get('/student', checkLogin, checkTeacher, (req, res, next) => {
+  res.json('STUDENT')
+})
+```
+- Tạo middleware chỉ account manager mới được vào :
+``` javascript
+var checkManager = (req, res, next) => {
+  var role = req.data.role
+  if (role === 'manager') {
+    next()
+  }
+  else {
+    res.json('NOT PERMISSION')
+  }
+}
+
+app.get('/teacher', checkLogin, checkManager, (req, res, next) => {
+  res.json('TEACHER')
+})
+```
+
