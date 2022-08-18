@@ -13,6 +13,7 @@
 13. [JSONWEBTOKEN TRONG EXPRESSJS](#jsonwebtoken-trong-expressjs)
 14. [ÁP DỤNG JWT LÀM CHỨC NĂNG ĐĂNG NHẬP, XÁC THỰC LOGIN VÀ BẢO VỆ ROUTER](#áp-dụng-jwt-làm-chức-năng-đăng-nhập-xác-thực-login-và-bảo-vệ-router)
 15. [ÁP DỤNG JWT PHÂN QUYỀN USER](#áp-dụng-jwt-phân-quyền-user)
+16. [AJAX VÀ XÁC THỰC PHÂN QUYỀN](#ajax-và-xác-thực-phân-quyền)
 
 # TỔNG QUAN FRAMEWORK EXPRESSJS NODEJS
 
@@ -1107,7 +1108,7 @@ var checkManager = (req, res, next) => {
   }
   else {
     res.json('NOT PERMISSION')
-  }
+  } 
 }
 
 app.get('/teacher', checkLogin, checkManager, (req, res, next) => {
@@ -1117,3 +1118,160 @@ app.get('/teacher', checkLogin, checkManager, (req, res, next) => {
 - Có thể thay các role bằng số để dễ viết giải thuật của các middleware hơn.
 - Với các hệ thống có nhiều phân quyền có thể tham khảo thư viện <a href="https://www.npmjs.com/package/acl">acl</a>
 
+
+# AJAX VÀ XÁC THỰC PHÂN QUYỀN
+
+- Tạo 1 file `home.html` :
+``` html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+</head>
+<body>
+    Đây là trang home
+</body>
+</html>
+```
+
+- Vào `server.js` tạo route cho /home
+```javascript
+// ---------------HOME-------------------------------------------------
+// GET
+app.get('/home', (req, res, next) => {
+  var token = req.cookies.token
+  var decodeToken = jwt.verify(token,'mk')
+  AccountModel.find({_id : decodeToken._id})
+  .then(data => {
+    if (data.Length == 0) {
+      return res.redirect('/login')
+    }
+    else {
+      if (data[0].role == 2) {
+        next()
+      }
+      else {
+        return res.redirect('/login')
+      }
+    }
+  })
+  next()
+},
+(req, res, next) => {
+  res.sendFile(path.join(__dirname,'home.html')) 
+})
+```
+
+- Chỉnh lại `login.html` để sau khi login thì chuyển sang trang home :
+```html 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<script src="./public//js/jquery-3.6.0.min.js"></script>
+<body>
+    Username : <input type="text" id="username" placeholder="Username" required><br>
+    Password : <input type="text" id="password" placeholder="Password" required><br>
+    <button onclick="login()">Login</button>
+</body>
+<script>
+    function setCookie(cname, cvalue, exdays) {
+        const d = new Date();
+        d.setTime(d.getTime() + (exdays*24*60*60*1000));
+        let expires = "expires="+ d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for(let i = 0; i <ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+    function login() {  
+        $.ajax({
+            url : '/login',
+            type : 'POST',
+            data : {
+                username : $('#username').val(),
+                password : $('#password').val(),
+            }
+        })
+        .then(data => {
+            setCookie('token', data.token, 1)
+            // console.log(data)
+            window.location.href = "/home"
+        })
+        .catch(err => {
+            console.log(err)
+        })
+    }
+</script>
+</html>
+```
+
+-  Tạo file `student.html` :
+``` html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student</title>
+</head>
+<body>
+    Đây là trang Student
+</body>
+</html>
+```
+
+- Tạo route cho /student trong `server.js` :
+```javascript
+// ---------------STUDENT-------------------------------------------------
+// GET
+app.get('/student', (req, res, next) => {
+  var token = req.cookies
+  console.log(token)
+  next()
+},
+(req, res, next) => {
+  res.sendFile(path.join(__dirname,'student.html')) 
+})
+```
+
+- Tạo route /edit với method POST chỉ cho manager có quyền chỉnh sửa (`server.js`): 
+```javascript
+// ---------------EDIT-------------------------------------------------
+// POST
+
+app.post('/edit', (req, res, next) => {
+  var token = req.headers
+  console.log(token)
+},
+(req, res, next) => {
+  res.json('Sửa thành công')
+})
+```
+  - `home.html` sửa thành : 
+``` html  
+
+```

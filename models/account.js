@@ -22,10 +22,11 @@ const AccountModel = mongoose.model("account", AccountSchema)
 // // Tạo tài khoản hàng loạt 
 // for (let i = 0; i < 10; i++) {
 //   AccountModel.create({
-//     username : "Cus" + i,
-//     password : '1',
-//     role : 'student'
+//     username : "RTR_AI" + i,
+//     password : 'rtr',
+//     role : '0'
 //   })
 // console.log("Done" + i)
 // }
+
 module.exports = AccountModel
