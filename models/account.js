@@ -19,12 +19,13 @@ const AccountSchema = new Schema({
 
 const AccountModel = mongoose.model("account", AccountSchema)
 
-// Tạo tài khoản hàng loạt 
-// for (let i = 0; i < 20; i++) {
+// // Tạo tài khoản hàng loạt 
+// for (let i = 0; i < 10; i++) {
 //   AccountModel.create({
-//     username : "RTR_AI_" + i,
-//     password : 123456
+//     username : "Cus" + i,
+//     password : '1',
+//     role : 'student'
 //   })
+// console.log("Done" + i)
 // }
-
 module.exports = AccountModel
