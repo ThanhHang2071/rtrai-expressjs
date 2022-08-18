@@ -1114,4 +1114,6 @@ app.get('/teacher', checkLogin, checkManager, (req, res, next) => {
   res.json('TEACHER')
 })
 ```
+- Có thể thay các role bằng số để dễ viết giải thuật của các middleware hơn.
+- Với các hệ thống có nhiều phân quyền có thể tham khảo thư viện <a href="https://www.npmjs.com/package/acl">acl</a>
 
