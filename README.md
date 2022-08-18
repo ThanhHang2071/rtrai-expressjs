@@ -12,6 +12,7 @@
 12. [GIỚI THIỆU VỀ CORS VÀ CÁCH MỞ CORS TRONG EXPRESS SERVER](#giới-thiệu-về-cors-và-cách-mở-cors-trong-express-server)
 13. [JSONWEBTOKEN TRONG EXPRESSJS](#jsonwebtoken-trong-expressjs)
 14. [ÁP DỤNG JWT LÀM CHỨC NĂNG ĐĂNG NHẬP, XÁC THỰC LOGIN VÀ BẢO VỆ ROUTER](#áp-dụng-jwt-làm-chức-năng-đăng-nhập-xác-thực-login-và-bảo-vệ-router)
+15. [ÁP DỤNG JWT PHÂN QUYỀN USER](#áp-dụng-jwt-phân-quyền-user)
 
 # TỔNG QUAN FRAMEWORK EXPRESSJS NODEJS
 
@@ -1030,5 +1031,41 @@ app.get('/private', (req, res, next) => {
 })
 ```
 
+# ÁP DỤNG JWT PHÂN QUYỀN USER
 
+- Tạo 1 middleware check login :
+``` javascript
+var checkLogin = (req, res, next) => {
+  // check login
+  try {
+    var token = req.cookies.token
+    var idUser = jwt.verify(token, 'mk')
+    AccountModel.findOne({
+      _id : idUser
+    })
+    .then(data => {
+      if (data) {
+        req.data = data
+        next()
+      }
+      else {
+        res.json("NOT PERMISSION")
+      }
+    })
+    .catch(err => {})
+  } catch (error) {
+    res.status(500).json("Token không hợp lệ")
+  }
+}
+```
+- Thêm middleware này vào route /task, cho tất cả người dùng vào nên chỉ cần checkLogin
+``` javascript
+// -----------------------------ALL TASK----------------
+app.get('/task', checkLogin, (req, res, next) => {
+  res.json('ALL TASK')
+})
+```
+- Tạo middleware chỉ account student mới được vào :
+``` javascript
 
+```

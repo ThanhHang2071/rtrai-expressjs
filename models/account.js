@@ -11,7 +11,8 @@ const AccountSchema = new Schema({
   password : {
     type : String,
     require : true
-  }
+  },
+  role : String
 }, {
     collection : 'account'
 })

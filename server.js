@@ -76,7 +76,7 @@ app.get('/user', (req, res, next) => {
 
 app.get('/home', (req, res, next) => {
     res.sendFile(path.join(__dirname, 'index.html'))
-})
+})  
 
 // ---------------LOGIN-------------------------------------------------
 // GET
@@ -126,6 +126,40 @@ app.get('/private', (req, res, next) => {
 }, (req, res, next) => {
   res.json('Welcomeeee!!!')
 })
+
+var checkLogin = (req, res, next) => {
+  // check login
+  try {
+    var token = req.cookies.token
+    var idUser = jwt.verify(token, 'mk')
+    AccountModel.findOne({
+      _id : idUser
+    })
+    .then(data => {
+      if (data) {
+        req.data = data
+        next()
+      }
+      else {
+        res.json("NOT PERMISSION")
+      }
+    })
+    .catch(err => {})
+  } catch (error) {
+    res.status(500).json("Token không hợp lệ")
+  }
+}
+
+// -----------------------------ALL TASK----------------
+app.get('/task', checkLogin, (req, res, next) => {
+  res.json('ALL TASK')
+})
+
+app.get('/teacher', checkLogin, (req, res, next) => {
+  res.json('TEACHER')
+})
+
+
 
 // app.listen(process.env.PORT, () => {
 //     console.log(`App listening`)
