@@ -1258,20 +1258,115 @@ app.get('/student', (req, res, next) => {
 })
 ```
 
+- Tạo route /home với method GET chỉ cho manager và teacher có quyền vào (`server.js`): 
+```javascript
+// ---------------HOME-------------------------------------------------
+// GET
+app.get('/home', (req, res, next) => {
+  var token = req.cookies.token
+  var decodeToken = jwt.verify(token,'mk')
+  AccountModel.find({_id : decodeToken._id})
+  .then((data) => {
+    console.log("3")
+    if (data.Length == 0) {
+      return res.redirect('/login')
+    }
+    else {
+      if (data[0].role < 2) {
+        next()
+      }
+      else {
+        return res.redirect('/login')
+      }
+    }
+  })
+  .catch(err => {
+    console.error(err)
+  })
+  // next()
+},
+(req, res, next) => {
+  res.sendFile(path.join(__dirname,'home.html')) 
+})
+```
+
 - Tạo route /edit với method POST chỉ cho manager có quyền chỉnh sửa (`server.js`): 
 ```javascript
 // ---------------EDIT-------------------------------------------------
 // POST
 
 app.post('/edit', (req, res, next) => {
-  var token = req.headers
+  var token = req.headers.cookie.split("-")[1]
+  var decodeToken = jwt.verify(token, 'mk')
+
+  AccountModel.find({_id : decodeToken._id})
+  .then(function(data) {
+    if (data.Length == 0) {
+      return res.redirect('/login')
+    }
+    else {
+      if (data[0].role == 0) {
+        next()
+      }
+      else {
+        return res.json({
+          error : true,
+          message : "Bạn không có quyền sửa"
+        })
+      }
+    }
+  })
   console.log(token)
-},
-(req, res, next) => {
+}, 
+(req, res) => {
   res.json('Sửa thành công')
 })
 ```
   - `home.html` sửa thành : 
 ``` html  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+</head>
+<body>
+    Đây là trang home
+    <button id = "btn">Edit</button>
+</body>
+<script>
+    $("#btn").click(function() {
+        var token = getCookie("token")
+        $.ajax({
+            url : "/edit",
+            headers : {
+                token :token
+            },
+            type : "post"
+        })
+        .then(data => console.log(data))
+    })
+   
 
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for(let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+        }
+</script>
+</html>
 ```
+

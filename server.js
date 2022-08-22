@@ -173,9 +173,7 @@ app.post('/login', (req, res, next) => {
 // GET
 app.get('/home', (req, res, next) => {
   var token = req.cookies.token
-  console.log("1")
   var decodeToken = jwt.verify(token,'mk')
-  console.log("2")
   AccountModel.find({_id : decodeToken._id})
   .then((data) => {
     console.log("3")
@@ -194,7 +192,6 @@ app.get('/home', (req, res, next) => {
   .catch(err => {
     console.error(err)
   })
-  console.log("4")
   // next()
 },
 (req, res, next) => {
