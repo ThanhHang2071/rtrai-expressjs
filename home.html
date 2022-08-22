@@ -9,17 +9,17 @@
 </head>
 <body>
     Đây là trang home
-    <button>Edit</button>
+    <button id = "btn">Edit</button>
 </body>
 <script>
     $("#btn").click(function() {
         var token = getCookie("token")
         $.ajax({
             url : "/edit",
-            type : "post",
             headers : {
                 token :token
-            }
+            },
+            type : "post"
         })
         .then(data => console.log(data))
     })

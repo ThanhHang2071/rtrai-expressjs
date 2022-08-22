@@ -173,14 +173,17 @@ app.post('/login', (req, res, next) => {
 // GET
 app.get('/home', (req, res, next) => {
   var token = req.cookies.token
+  console.log("1")
   var decodeToken = jwt.verify(token,'mk')
+  console.log("2")
   AccountModel.find({_id : decodeToken._id})
-  .then(function(data) {
+  .then((data) => {
+    console.log("3")
     if (data.Length == 0) {
       return res.redirect('/login')
     }
     else {
-      if (data[0].role == 0) {
+      if (data[0].role < 2) {
         next()
       }
       else {
@@ -191,7 +194,8 @@ app.get('/home', (req, res, next) => {
   .catch(err => {
     console.error(err)
   })
-  next()
+  console.log("4")
+  // next()
 },
 (req, res, next) => {
   res.sendFile(path.join(__dirname,'home.html')) 
@@ -201,7 +205,7 @@ app.get('/home', (req, res, next) => {
 // POST
 
 app.post('/edit', (req, res, next) => {
-  var token = req.headers.cookie.dpliy("-")[1]
+  var token = req.headers.cookie.split("-")[1]
   var decodeToken = jwt.verify(token, 'mk')
 
   AccountModel.find({_id : decodeToken._id})
@@ -214,13 +218,16 @@ app.post('/edit', (req, res, next) => {
         next()
       }
       else {
-        return res.redirect('/login')
+        return res.json({
+          error : true,
+          message : "Bạn không có quyền sửa"
+        })
       }
     }
   })
   console.log(token)
-},
-(req, res, next) => {
+}, 
+(req, res) => {
   res.json('Sửa thành công')
 })
 
